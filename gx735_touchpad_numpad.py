@@ -1,7 +1,7 @@
 from libevdev import Device, InputEvent, EV_ABS, EV_KEY, EV_LED, EV_SYN
 from fcntl import fcntl, F_SETFL
 from time import sleep, time
-import sys 
+import sys
 from os import O_NONBLOCK
 
 
