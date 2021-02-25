@@ -113,7 +113,9 @@ numlock = False
 # result_str = result.stdout.decode('utf-8')
 # if re.search('on', result_str):
 #     numlock = True
-#
+#     print('numlock on')
+# else:
+#     print('numlock off')
 # # sync numlock state with touchpad
 # if numlock:
 #     touchpad.grab()
