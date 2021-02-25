@@ -17,6 +17,6 @@ TimeoutSec=5
 User=root
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 
 # -)

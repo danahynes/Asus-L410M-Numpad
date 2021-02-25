@@ -109,26 +109,27 @@ value = 0
 
 # get numlock state
 numlock = False
-x = subprocess.check_output('xset q | grep LED', shell=True)[65]
-if (x == 50):
-    numlock = True
-
-# sync numlock state with touchpad
-if numlock:
-    touchpad.grab()
-else:
-    touchpad.ungrab()
+# result = subprocess.run(['numlockx', 'status'],  stdout=subprocess.PIPE)
+# result_str = result.stdout.decode('utf-8')
+# if re.search('on', result_str):
+#     numlock = True
+#
+# # sync numlock state with touchpad
+# if numlock:
+#     touchpad.grab()
+# else:
+#     touchpad.ungrab()
 
 # get rect dimensions for toggle button
-toggle_w = (max_x / 10)
-toggle_h = (max_y / 9)
+toggle_w = (max_x * 0.10)
+toggle_h = (max_y * 0.11)
 toggle_x = (max_x - toggle_w)
 toggle_y = 0
 toggle_rect = (toggle_x, toggle_y, (toggle_x + toggle_w), (toggle_y + toggle_h))
 
 # get col(x) dimensions for keys and toggle
 # expressed as each col's x start
-col_width = (max_x / 5)
+col_width = (max_x * 0.20)
 col_0 = 0
 col_1 = (col_0 + col_width)
 col_2 = (col_1 + col_width)
@@ -144,7 +145,7 @@ cols = [
 
 # get row(y) dimensions for keys and toggle
 # expressed as each row's y start
-row_height = ((max_y - toggle_h) / 4)
+row_height = ((max_y - toggle_h) * 0.25)
 row_0 = toggle_h
 row_1 = (row_0 + row_height)
 row_2 = (row_1 + row_height)
