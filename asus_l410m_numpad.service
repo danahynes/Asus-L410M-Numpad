@@ -14,6 +14,7 @@ After=display-manager.service
 Type=simple
 ExecStart=/usr/bin/python3 /usr/bin/asus_l410m_numpad.py
 TimeoutSec=5
+User=root
 
 [Install]
 WantedBy=default.target
