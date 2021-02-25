@@ -46,3 +46,7 @@ foo@bar:~$ sudo ./uninstall.sh
 I have not been able to get the backlight for the numpad working yet. I thought it would be mapped to the keyboard's NUMLOCK light, as it was in [the original project](https://gitlab.com/Thraen/gx735_touchpad_numpad), even though my keyboard doesn't actually have one. Testing shows the messages for the light are being sent and tracked by the system, but the hardware doesn't work yet. More testing with a working (Windows) installation is needed, but I'm too lazy to do that.
 
 Also note that if your keyboard has a NumLock key, it's not being monitored here. My keyboard doesn't, so I didn't write any checks. If you use a physical key or the OSK, things will get out of sync.
+
+# TODO
+
+1. better sync with numlock key/state
