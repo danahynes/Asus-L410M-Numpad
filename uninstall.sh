@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 #------------------------------------------------------------------------------#
-# Filename: install.sh                                           /          \  #
+# Filename: uninstall.sh                                         /          \  #
 # Project : Asus_L410M_Numpad                                   |     ()     | #
 # Date    : 02/17/2021                                          |            | #
 # Author  : Dana Hynes                                          |   \____/   | #
 # License : WTFPLv2                                              \          /  #
 #------------------------------------------------------------------------------#
 
-# copy files to location
-sudo cp ./asus_l410m_numpad.py /usr/bin
-sudo cp ./asus_l410m_numpad.service /lib/systemd/system/
+# stop service now and on reboot
+sudo systemctl stop asus_l410m_numpad
+sudo systemctl disable asus_l410m_numpad
 
-# start service now and on reboot
-sudo systemctl start asus_l410m_numpad
-sudo systemctl enable asus_l410m_numpad
+# delete files from location
+sudo rm /usr/bin/asus_l410m_numpad.py
+sudo rm /lib/systemd/system/asus_l410m_numpad.service
 
 # -)

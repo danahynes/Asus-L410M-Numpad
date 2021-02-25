@@ -1,13 +1,21 @@
+#------------------------------------------------------------------------------#
+# Filename: asus_l410m_numpad.service                            /          \  #
+# Project : Asus_L410M_Numpad                                   |     ()     | #
+# Date    : 02/17/2021                                          |            | #
+# Author  : Dana Hynes                                          |   \____/   | #
+# License : WTFPLv2                                              \          /  #
+#------------------------------------------------------------------------------#
+
 [Unit]
-Description=Asus Touchpad to Numpad Handler
-After=sddm.service display-manager.service
-Conflicts=getty@tty1.service
+Description=Asus L410M Numpad (http://github.com/danahynes/Asus_L410M_Numpad)
+After=display-manager.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /usr/bin/gx735_touchpad_numpad.py
-StandardInput=tty-force
+ExecStart=/usr/bin/python3 /usr/bin/asus_l410Mm_numpad.py
 TimeoutSec=5
 
 [Install]
 WantedBy=default.target
+
+# -)

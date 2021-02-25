@@ -1,270 +1,364 @@
-from libevdev import Device, InputEvent, EV_ABS, EV_KEY, EV_LED, EV_SYN
-from fcntl import fcntl, F_SETFL
-from time import sleep, time
+#------------------------------------------------------------------------------#
+# Filename: asus_l410m_numpad.py                                 /          \  #
+# Project : Asus_L410M_Numpad                                   |     ()     | #
+# Date    : 02/17/2021                                          |            | #
+# Author  : Dana Hynes                                          |   \____/   | #
+# License : WTFPLv2                                              \          /  #
+#------------------------------------------------------------------------------#
+# Inspired by https://gitlab.com/Thraen/gx735_touchpad_numpad                  #
+#------------------------------------------------------------------------------#
+
+#imports
+import fcntl
+import libevdev
+import os
+import re
+import subprocess
 import sys
-from os import O_NONBLOCK
+import time
 
+# get touchpad event handler
+touchpad_found = False
+if os.path.exists('/proc/bus/input/devices'):
+    with open('/proc/bus/input/devices', 'r') as f:
+        lines = f.readlines()
 
+        # walk through the file
+        for line in lines:
+            if 'TOUCHPAD' in line.upper():
+                touchpad_found = True
+                continue
+            if touchpad_found:
+                if 'Handlers=' in line:
+                    parts = line.split(' ')
+                    event = parts[2]
+                    event = event.split('event')
+                    event = event[1]
+                    touchpad_id = event
+                    break
 
-# Look into the devices file #
-#tries=5
-# while tries > 0:
+# no touchpad, no laundry
+if not touchpad_found:
+    print('Touchpad not found, freaking out...')
+    sys.exit(1)
 
-#     keyboard_detected = 0
-#     touchpad_detected = 0
-#
-#     with open('/proc/bus/input/devices', 'r') as f:
-#
-#         lines = f.readlines()
-#         for line in lines:
-#             # Look for the touchpad #
-#             if touchpad_detected == 0 and "Name=\"ELAN" in line and "Mouse" not in line:
-#                 touchpad_detected = 1
-#
-#             if touchpad_detected == 1:
-#                 if "H: " in line:
-#                     touchpad = line.split("event")[1]
-#                     touchpad = touchpad.split(" ")[0]
-#                     touchpad_detected = 2
-#             # Look for the keyboard (numlock) #
-#             if keyboard_detected == 0 and ("Asus Keyboard" in line or "N-KEY" in line):
-#                 keyboard_detected = 1
-#
-#             if keyboard_detected == 1:
-#                 if "H: " in line:
-#                     keyboard = line.split("event")[1]
-#                     keyboard = keyboard.split(" ")[0]
-#                 if "ff98007a000007ff" in line:
-#                     keyboard_detected = 2
-#             # Stop looking if both have been found #
-#             if keyboard_detected == 2 and touchpad_detected == 2:
-#                 break
-#
-#     if keyboard_detected != 2 or touchpad_detected != 2:
-#         tries -= 1
-#         if tries == 0:
-#             if keyboard_detected != 2:
-#                 print("Can't find keyboard, code " + str(keyboard_detected))
-#             if touchpad_detected != 2:
-#                 print("Can't find touchpad, code " + str(touchpad_detected))
-#             sys.exit(1)
-#     else:
-#         break
+# try to connect to touchpad
+if os.path.exists('/dev/input/event' + str(touchpad_id)):
 
-#     sleep(0.1)
+    # create a file descriptor (pipe) for the touchpad
+    fd_touchpad = open('/dev/input/event' + str(touchpad_id), 'rb')
 
-touchpad = 14
-#keyboard = 15
+    # set file descriptor (pipe) to non-blocking
+    fcntl.fcntl(fd_touchpad, fcntl.F_SETFL, os.O_NONBLOCK)
 
+    # get a device object (end point) for the file descriptor (pipe)
+    touchpad = libevdev.Device(fd_touchpad)
 
+# no touchpad, no laundry
+else:
+    print('Could not open connection to touchpad, freaking out...')
+    sys.exit(1)
 
+# retrieve touchpad dimensions
+info = touchpad.absinfo[libevdev.EV_ABS.ABS_X]
+(min_x, max_x) = (info.minimum, info.maximum)
+info = touchpad.absinfo[libevdev.EV_ABS.ABS_Y]
+(min_y, max_y) = (info.minimum, info.maximum)
 
-# Start monitoring the touchpad #
-fd_t = open('/dev/input/event' + str(touchpad), 'rb')
-fcntl(fd_t, F_SETFL, O_NONBLOCK)
-d_t = Device(fd_t)
+# create a new keyboard device to send numpad events
+dev_fake_kbd = libevdev.Device()
+dev_fake_kbd.name = "Asus_L410M_Numpad"
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP1)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP2)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP3)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP4)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP5)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP6)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP7)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP8)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP9)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KP0)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPCOMMA)    # decimal
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPENTER)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPSLASH)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPASTERISK)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPMINUS)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPPLUS)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_BACKSPACE)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_LEFTSHIFT)  # for percent (shift-5)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_5)          # for percent (shift-5)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_KPEQUAL)
+dev_fake_kbd.enable(libevdev.EV_KEY.KEY_NUMLOCK)    # for toggle
+fake_kbd = dev_fake_kbd.create_uinput_device()
 
-# Retrieve touchpad dimensions #
-ai = d_t.absinfo[EV_ABS.ABS_X]
-(minx, maxx) = (ai.minimum, ai.maximum)
-ai = d_t.absinfo[EV_ABS.ABS_Y]
-(miny, maxy) = (ai.minimum, ai.maximum)
+# helper functions
+def ptInRect(pt, rect):
+    if (rect[0] <= pt[0] <= rect[2]) and (rect[1] <= pt[1] <= rect[3]):
+        return True
+    else:
+        return False
 
-# Start monitoring the keyboard (numlock) #
-# fd_k = open('/dev/input/event' + str(keyboard), 'rb')
-# fcntl(fd_k, F_SETFL, O_NONBLOCK)
-# d_k = Device(fd_k)
-
-# Create a new keyboard device to send numpad events #
-dev = Device()
-dev.name = "Asus Touchpad/Numpad"
-dev.enable(EV_KEY.KEY_KP1)
-dev.enable(EV_KEY.KEY_KP2)
-dev.enable(EV_KEY.KEY_KP3)
-dev.enable(EV_KEY.KEY_KP4)
-dev.enable(EV_KEY.KEY_KP5)
-dev.enable(EV_KEY.KEY_KP6)
-dev.enable(EV_KEY.KEY_KP7)
-dev.enable(EV_KEY.KEY_KP8)
-dev.enable(EV_KEY.KEY_KP9)
-dev.enable(EV_KEY.KEY_KP0)
-dev.enable(EV_KEY.KEY_KPSLASH)
-dev.enable(EV_KEY.KEY_KPASTERISK)
-dev.enable(EV_KEY.KEY_KPMINUS)
-dev.enable(EV_KEY.KEY_KPPLUS)
-dev.enable(EV_KEY.KEY_KPCOMMA)      # decimal
-dev.enable(EV_KEY.KEY_KPENTER)
-dev.enable(EV_KEY.KEY_KPEQUAL)
-dev.enable(EV_KEY.KEY_BACKSPACE)
-dev.enable(EV_KEY.KEY_LEFTSHIFT)    # for percent (shift-5)
-dev.enable(EV_KEY.KEY_5)            # for percent (shift-5)
-dev.enable(EV_KEY.KEY_NUMLOCK)
-
-udev = dev.create_uinput_device()
-start = 0
+# global variables
+current_x = 0
+current_y = 0
+pt = (0, 0)
 toggle = False
-numlock = False
-x = 0
-y = 0
-pressed = 0
+start_time = 0
 shift = False
 value = 0
 
-# Process events while running #
+# get numlock state
+numlock = False
+x = subprocess.check_output('xset q | grep LED', shell=True)[65]
+if (x == 50):
+    numlock = True
+
+# sync numlock state with touchpad
+if numlock:
+    touchpad.grab()
+else:
+    touchpad.ungrab()
+
+# get rect dimensions for toggle button
+toggle_w = (max_x / 10)
+toggle_h = (max_y / 9)
+toggle_x = (max_x - toggle_w)
+toggle_y = 0
+toggle_rect = (toggle_x, toggle_y, (toggle_x + toggle_w), (toggle_y + toggle_h))
+
+# get col(x) dimensions for keys and toggle
+# expressed as each col's x start
+col_width = (max_x / 5)
+col_0 = 0
+col_1 = (col_0 + col_width)
+col_2 = (col_1 + col_width)
+col_3 = (col_2 + col_width)
+col_4 = (col_3 + col_width)
+cols = [
+    col_0,
+    col_1,
+    col_2,
+    col_3,
+    col_4
+]
+
+# get row(y) dimensions for keys and toggle
+# expressed as each row's y start
+row_height = ((max_y - toggle_h) / 4)
+row_0 = toggle_h
+row_1 = (row_0 + row_height)
+row_2 = (row_1 + row_height)
+row_3 = (row_2 + row_height)
+rows = [
+    row_0,
+    row_1,
+    row_2,
+    row_3
+]
+
+# rects for keys - rect = (x, y, (x + w), (y + h))
+rect_1 =            (cols[0], rows[2], cols[0] + col_width, rows[2] + row_height)
+rect_2 =            (cols[1], rows[2], cols[1] + col_width, rows[2] + row_height)
+rect_3 =            (cols[2], rows[2], cols[2] + col_width, rows[2] + row_height)
+rect_4 =            (cols[0], rows[1], cols[0] + col_width, rows[1] + row_height)
+rect_5 =            (cols[1], rows[1], cols[1] + col_width, rows[1] + row_height)
+rect_6 =            (cols[2], rows[1], cols[2] + col_width, rows[1] + row_height)
+rect_7 =            (cols[0], rows[0], cols[0] + col_width, rows[0] + row_height)
+rect_8 =            (cols[1], rows[0], cols[1] + col_width, rows[0] + row_height)
+rect_9 =            (cols[2], rows[0], cols[2] + col_width, rows[0] + row_height)
+rect_0 =            (cols[0], rows[3], cols[0] + col_width, rows[3] + row_height)
+rect_comma =        (cols[1], rows[3], cols[1] + col_width, rows[3] + row_height)
+rect_enter =        (cols[2], rows[3], cols[2] + col_width, rows[3] + row_height)
+rect_slash =        (cols[3], rows[0], cols[3] + col_width, rows[0] + row_height)
+rect_asterisk =     (cols[3], rows[1], cols[3] + col_width, rows[1] + row_height)
+rect_minus =        (cols[3], rows[2], cols[3] + col_width, rows[2] + row_height)
+rect_plus =         (cols[3], rows[3], cols[3] + col_width, rows[3] + row_height)
+# backspace key is two rows high
+rect_backspace =    (cols[4], rows[0], cols[4] + col_width, rows[0] + (row_height * 2))
+rect_percent =      (cols[4], rows[2], cols[4] + col_width, rows[2] + row_height)
+rect_equals =       (cols[4], rows[3], cols[4] + col_width, rows[3] + row_height)
+
+# main loop
 while True:
 
-    # If keyboard sends numlock event, enable/disable touchpad events #
-    # for e in d_k.events():
-    #     if e.matches(EV_LED.LED_NUML):
-    #         numlock = not numlock
-    #         if numlock:
-    #             d_t.grab()
-    #         else:
-    #             d_t.ungrab()
+    # look at each event from touchpad
+    for e in touchpad.events():
 
-    # If touchpad sends tap events, convert x/y position to numlock key and send it #
-    for e in d_t.events():
+        # get the current touch position
+        if e.matches(libevdev.EV_ABS.ABS_MT_POSITION_X):
+            current_x = e.value
+            pt = (current_x, current_y)
+            if toggle and not ptInRect(pt, toggle_rect):
+                toggle = False
+
+        if e.matches(libevdev.EV_ABS.ABS_MT_POSITION_Y):
+            current_y = e.value
+            pt = (current_x, current_y)
+            if toggle and not ptInRect(pt, toggle_rect):
+                toggle = False
+
+        # if it was a finger event
+        if e.matches(libevdev.EV_KEY.BTN_TOOL_FINGER):
+
+            # start of touch
+            if (e.value == 1):
+
+                # save current as point
+                pt = (current_x, current_y)
+
+                # if touch starts as a toggle
+                if ptInRect(pt, toggle_rect):
+                     toggle = True
+                     start_time = time.time()
+
+                # if we are using numpad
+                if numlock:
+
+                    # reset value
+                    shift = False
+                    value = 0
+
+                    # find the key we pressed on
+                    if ptInRect(pt, rect_1):
+                        value = libevdev.EV_KEY.KEY_KP1
+                    if ptInRect(pt, rect_2):
+                        value = libevdev.EV_KEY.KEY_KP2
+                    if ptInRect(pt, rect_3):
+                        value = libevdev.EV_KEY.KEY_KP3
+                    if ptInRect(pt, rect_4):
+                        value = libevdev.EV_KEY.KEY_KP4
+                    if ptInRect(pt, rect_5):
+                        value = libevdev.EV_KEY.KEY_KP5
+                    if ptInRect(pt, rect_6):
+                        value = libevdev.EV_KEY.KEY_KP6
+                    if ptInRect(pt, rect_7):
+                        value = libevdev.EV_KEY.KEY_KP7
+                    if ptInRect(pt, rect_8):
+                        value = libevdev.EV_KEY.KEY_KP8
+                    if ptInRect(pt, rect_9):
+                        value = libevdev.EV_KEY.KEY_KP9
+                    if ptInRect(pt, rect_0):
+                        value = libevdev.EV_KEY.KEY_KP0
+                    if ptInRect(pt, rect_comma):
+                        value = libevdev.EV_KEY.KEY_KPCOMMA
+                    if ptInRect(pt, rect_enter):
+                        value = libevdev.EV_KEY.KEY_KPENTER
+                    if ptInRect(pt, rect_slash):
+                        value = libevdev.EV_KEY.KEY_KPSLASH
+                    if ptInRect(pt, rect_asterisk):
+                        value = libevdev.EV_KEY.KEY_KPASTERISK
+                    if ptInRect(pt, rect_minus):
+                        value = libevdev.EV_KEY.KEY_KPMINUS
+                    if ptInRect(pt, rect_plus):
+                        value = libevdev.EV_KEY.KEY_KPPLUS
+                    if ptInRect(pt, rect_backspace):
+                        value = libevdev.EV_KEY.KEY_BACKSPACE
+                    if ptInRect(pt, rect_percent):
+
+                        # percent key needs shift + 5
+                        shift = True
+                        value = libevdev.EV_KEY.KEY_5
+                    if ptInRect(pt, rect_equals):
+                        value = libevdev.EV_KEY.KEY_KPEQUAL
+
+                    # if we pressed on a known key
+                    if (value != 0):
+
+                        # press shift if we need percent sign
+                        if shift:
+                            try:
+                                events = [
+                                    libevdev.InputEvent(libevdev.EV_KEY.KEY_LEFTSHIFT, 1),
+                                    libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                                ]
+                                fake_kbd.send_events(events)
+                            except OSError as e:
+                                pass
+
+                        # press the appropriate key
+                        try:
+                            events = [
+                                libevdev.InputEvent(value, 1),
+                                libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                            ]
+                            fake_kbd.send_events(events)
+                        except OSError as e:
+                            pass
+
+            # end of touch
+            if (e.value == 0):
+
+                # if a key was pressed
+                if (value != 0):
+
+                    # release key
+                    try:
+                        events = [
+                            libevdev.InputEvent(value, 0),
+                            libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                        ]
+                        fake_kbd.send_events(events)
+                    except OSError as e:
+                        pass
+
+                    # release shift key if it was the percent
+                    if shift:
+                        try:
+                            events = [
+                                libevdev.InputEvent(libevdev.EV_KEY.KEY_LEFTSHIFT, 0),
+                                libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                            ]
+                            fake_kbd.send_events(events)
+                        except OSError as e:
+                            pass
+
+                # clear flags and value
+                toggle = False
+                start_time = 0
+                shift = False
+                value = 0
+
+        # N.B. this block matches ANY event
 
         # if the tap started at the toggle switch
         if toggle:
 
             # if it was held long enough
-            if time() - start >= 2:
+            if ((time.time() - start_time) >= 2):
 
                 # reset flag
                 toggle = False
+                start_time = 0
 
-                # toggle flag
+                # toggle state
                 numlock = not numlock
 
-                # grab or ungrab pad
+                # grab or ungrab touchpad
                 if numlock:
-                    d_t.grab()
+                    touchpad.grab()
                 else:
-                    d_t.ungrab()
+                    touchpad.ungrab()
 
                 # send numlock key for indicator
                 try:
-                    events = [InputEvent(EV_KEY.KEY_NUMLOCK, 1),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)]
-                    udev.send_events(events)
-                    events = [InputEvent(EV_KEY.KEY_NUMLOCK, 0),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)]
-                    udev.send_events(events)
+                    events = [
+                        libevdev.InputEvent(libevdev.EV_KEY.KEY_NUMLOCK, 1),
+                        libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                    ]
+                    fake_kbd.send_events(events)
+                    events = [
+                        libevdev.InputEvent(libevdev.EV_KEY.KEY_NUMLOCK, 0),
+                        libevdev.InputEvent(libevdev.EV_SYN.SYN_REPORT, 0)
+                    ]
+                    fake_kbd.send_events(events)
                 except OSError as e:
                     pass
 
-        # Get x position on first touch
-        if e.matches(EV_ABS.ABS_MT_POSITION_X) and pressed == 0:
-            x = e.value
 
-        # Get y position on first touch
-        if e.matches(EV_ABS.ABS_MT_POSITION_Y) and pressed == 0:
-            y = e.value
+    # don't use all cpu time!
+    time.sleep(0.1)
 
-        # If tap #
-        if e.matches(EV_KEY.BTN_TOOL_FINGER):
+# close file descriptor
+fd_touchpad.close()
 
-            # Start of tap #
-            if e.value == 1 and pressed == 0:
-                pressed = 1
-                shift = False
-                value = 0
-
-                try:
-                    if y > 0.78 * maxy:
-                        if x > 0.8 * maxx:
-                            value = EV_KEY.KEY_KPEQUAL
-                        elif x > 0.6 * maxx:
-                            value = EV_KEY.KEY_KPPLUS
-                        elif x > 0.4 * maxx:
-                            value = EV_KEY.KEY_KPENTER
-                        elif x > 0.2 * maxx:
-                            value = EV_KEY.KEY_KPCOMMA
-                        else:
-                            value = EV_KEY.KEY_KP0
-                    elif y > 0.56 * maxy:
-                        if x > 0.8 * maxx:
-                            shift = True
-                            try:
-                                events = [InputEvent(EV_KEY.KEY_LEFTSHIFT, 1),
-                                    InputEvent(EV_SYN.SYN_REPORT, 0)]
-                                udev.send_events(events)
-                            except OSError as e:
-                                pass
-                            value = EV_KEY.KEY_5
-                        elif x > 0.6 * maxx:
-                            value = EV_KEY.KEY_KPMINUS
-                        elif x > 0.4 * maxx:
-                            value = EV_KEY.KEY_KP3
-                        elif x > 0.2 * maxx:
-                            value = EV_KEY.KEY_KP2
-                        else:
-                            value = EV_KEY.KEY_KP1
-                    elif y > 0.34 * maxy:
-                        if x > 0.8 * maxx:
-                            value = EV_KEY.KEY_BACKSPACE
-                        elif x > 0.6 * maxx:
-                            value = EV_KEY.KEY_KPASTERISK
-                        elif x > 0.4 * maxx:
-                            value = EV_KEY.KEY_KP6
-                        elif x > 0.2 * maxx:
-                            value = EV_KEY.KEY_KP5
-                        else:
-                            value = EV_KEY.KEY_KP4
-                    elif y > 0.12 * maxy:
-                        if x > 0.8 * maxx:
-                            value = EV_KEY.KEY_BACKSPACE
-                        elif x > 0.6 * maxx:
-                            value = EV_KEY.KEY_KPSLASH
-                        elif x > 0.4 * maxx:
-                            value = EV_KEY.KEY_KP9
-                        elif x > 0.2 * maxx:
-                            value = EV_KEY.KEY_KP8
-                        else:
-                            value = EV_KEY.KEY_KP7
-                    else:
-                        if x > 0.9 * maxx:
-                            value = EV_KEY.KEY_NUMLOCK
-                            start = time()
-                            toggle = True
-                            continue
-                        else:
-                            continue
-
-                    if numlock:
-                        # Send press key event #
-                        events = [InputEvent(value, 1),
-                            InputEvent(EV_SYN.SYN_REPORT, 0)]
-                        udev.send_events(events)
-                except OSError as e:
-                    pass
-
-            # If end of tap, send release key event #
-            if e.value == 0:
-                pressed = 0
-
-                try:
-                    events = [InputEvent(value, 0),
-                        InputEvent(EV_SYN.SYN_REPORT, 0)]
-                    udev.send_events(events)
-                except OSError as e:
-                    pass
-
-                if shift:
-                    shift = False
-                    try:
-                        events = [InputEvent(EV_KEY.KEY_LEFTSHIFT, 0),
-                            InputEvent(EV_SYN.SYN_REPORT, 0)]
-                        udev.send_events(events)
-                    except OSError as e:
-                        pass
-
-
-
-
-    sleep(0.1)
-
-# Close file descriptors #
-fd_k.close()
-fd_t.close()
+# -)
