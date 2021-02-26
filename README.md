@@ -38,7 +38,7 @@ You can also download the [latest release](http://github.com/danahynes/Asus_L410
 
 To uninstall, go to the git directory and run:
 ```bash
-foo@bar:~$ sudo ./uninstall.sh
+foo@bar:~/Downloads/Asus_L410M_Numpad$ sudo ./uninstall.sh
 ```
 
 or delete the files manually:
@@ -51,8 +51,10 @@ foo@bar:~$ sudo rm /lib/systemd/system/asus_l410m_numpad.service
 
 I have not been able to get the backlight for the numpad working yet. I thought it would be mapped to the keyboard's NUMLOCK light, as it was in [the original project](https://gitlab.com/Thraen/gx735_touchpad_numpad), even though my keyboard doesn't actually have one. Testing shows the messages for the light are being sent and tracked by the system, but the hardware doesn't work yet. More testing with a working (Windows) installation and a USB sniffer is needed, but I'm WAAAAYYY too lazy to do that.
 
-Also note that if your keyboard has a NumLock key, it's not being monitored here. My keyboard doesn't have one, so I didn't write any checks. If you use a physical key or the OSK, things will get out of sync.
+Also note that this only works IF YOUR NUMLOCK KEY IS OFF AT BOOT. Mine is, yours probably will be too, but since I don't have a reliable way to get the numlock state at boot (still futzing with X on this -),  it is assumed that it is off. Again, this will be the default state for most users, so you should be OK. IF YOUR NUMLOCK KEY IS ON AT BOOT, I can't guarantee the behavior, so YMMV.
+
+This program assumes that when it starts, NUMLOCK will be off (as it should at system boot). Checking the state of the numlock at start has proven quite difficult, so we assume it is off (as it should be 99% of the time). If your system boots with the NUMLOCK on, please fork, change, and send me a pull request with more info so I can investigate.
 
 # TODO
 
-1. better sync with numlock key/state (including OSK)
+1. better sync with numlock key/state (including OSK and state at boot)
