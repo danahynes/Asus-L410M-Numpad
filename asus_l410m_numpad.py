@@ -229,7 +229,7 @@ while True:
 
             # flip flag
             numlock = not numlock
-            
+
             # only change once - numlock is now True
             if numlock:
 
@@ -237,7 +237,7 @@ while True:
                 touchpad.grab()
 
             # only change once - numlock is now False
-            else
+            else:
                 # numlock = False
                 touchpad.ungrab()
 
