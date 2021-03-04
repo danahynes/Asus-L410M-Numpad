@@ -49,6 +49,10 @@ foo@bar:~$ sudo rm /lib/systemd/system/asus_l410m_numpad.service
 
 # Notes
 
+If you are using Elementary OS 5, turn on the Numlock indicator by going to System Settings -> Keyboard -> Layout -> Show in panel -> Num Lock and turning it on.
+
+To toggle the numpad mode, press and hold on the toggle area for > 2 seconds.
+
 I have not been able to get the backlight for the numpad working yet. I thought it would be mapped to the keyboard's NUMLOCK light, as it was in [the original project](https://gitlab.com/Thraen/gx735_touchpad_numpad) (and would be the most obvious way of using it -), even though my keyboard doesn't actually have one. Testing shows the messages for the Numlock light are being sent and tracked by the system, so it's not as simple as it should be -). More testing with a working (Windows) installation and a USB or i2c sniffer is needed, but I'm WAAAAYYY too lazy to do that.
 
 Also note that this only works IF YOUR NUMLOCK KEY IS OFF AT BOOT. Mine is, yours probably will be too, but since I don't have a reliable way to get the numlock state at boot (still futzing with X on this -),  it is assumed that it is off. Again, this will be the default state for most users, so you should be OK. IF YOUR NUMLOCK KEY IS ON AT BOOT, I can't guarantee the behavior, so YMMV.
