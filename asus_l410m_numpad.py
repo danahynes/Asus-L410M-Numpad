@@ -25,6 +25,7 @@ toggle = False
 start_toggle_time = 0
 shift = False
 value = 0
+secs_to_toggle = 2
 
 # get keyboard event handler
 keyboard_found = False
@@ -392,7 +393,7 @@ while True:
         if toggle:
 
             # if it was held long enough
-            if ((time.time() - start_toggle_time) >= 2):
+            if ((time.time() - start_toggle_time) >= secs_to_toggle):
 
                 # reset flag
                 toggle = False
