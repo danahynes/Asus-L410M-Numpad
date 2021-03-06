@@ -51,7 +51,7 @@ foo@bar:~$ sudo rm /lib/systemd/system/asus_l410m_numpad.service
 
 If you are using Elementary OS 5, turn on the Numlock indicator by going to System Settings -> Keyboard -> Layout -> Show in panel -> Num Lock and turning it on.
 
-To toggle the numpad mode, press and hold on the toggle area for > 2 seconds.
+To toggle the numpad mode, press and hold on the toggle area for > (secs_to_toggle)(default = 2) seconds.
 
 I have not been able to get the backlight for the numpad working yet. I thought it would be mapped to the keyboard's NUMLOCK light, as it was in [the original project](https://gitlab.com/Thraen/gx735_touchpad_numpad) (and would be the most obvious way of using it -), even though my keyboard doesn't actually have one. Testing shows the messages for the Numlock light are being sent and tracked by the system, so it's not as simple as it should be -). More testing with a working (Windows) installation and a USB or i2c sniffer is needed, but I'm WAAAAYYY too lazy to do that.
 
@@ -67,9 +67,18 @@ subprocess.call('xset q | grep LED'.split())[65]
 ```
 and they work just fine when I run the program from the commandline. But when I set the program to run as a service, I get errors in journalctl saying the the subprocess returned a non-zero exit code, regardless of which command I use. I can wrap the calls in a try/except block to catch this, but then the whole call gets ignored, which is the same as not using a call at all. I'm not sure what is different when the py script gets called as a service (obviously a few ideas, like interactive vs. login shell, sh vs. bash, environment variables, etc.) but with all my Google-fu I can't find a definitive answer. So, since I can't get a reliable initial Numlock state, I'm just assuming it's off. The script starts at boot, and I feel that it's safe to assume that Numlock will be off at boot. Once the script is up and running, it monitors both the toggle area on the trackpad and the Numlock key (if you have one), as well as the Numlock from the On-Screen Keyboard (OSK) for those of us without an actual Numlock key. So I feel like I have almost all the bases covered. Using either the trackpad's toggle area and/or the OSK Numlock key seems to keep everything in sync, so I am confident in saying "It mostly works™". If anyone has any ideas on why/how running a shell command in a python3 script that runs as a service doesn't work, please let me know.
 
+# Update
+
+It seems that after a full Windows 10 install, with the proper drivers installed, my numpad only has a little LED next to the toggle switch to indicate if it is On or Off. I thought it illuminated the whole touchpad, though I could be wrong as I didn't keep the original Windows on this laptop for more than a few minutes (viva el linux!). Either way it doesn't work yet and I am working on it.
+
+Also a lot of people on the interwebs complained about the Windows driver's toggle switch being too finicky, so I added a timeout where you have to press and hold the toggle button for (secs_to_toggle) seconds for the toggle to take place. The default is two(2) seconds.
+
+Also note that a press on any numpad key and moving the finger will result in that key being repeated. A simple fix but one I have not implemented yet.
+
 # TODO
 
 1. get numlock state at boot
 1. get backlight working
+1. track finger in current rect
 
 # -)
