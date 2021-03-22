@@ -24,10 +24,7 @@ foo@bar:~/Downloads$ git clone https://github.com/danahynes/Asus_L410M_Numpad
 foo@bar:~/Downloads$ cd Asus_L410M_Numpad
 ```
 
-You will need to install the python3 module 'libevdev':
-```bash
-foo@bar:~/Downloads/Asus_L410M_Numpad$ pip3 install libevdev
-```
+After that, install the latest version of libevdev:
 
 Once you do that, you can install by:
 ```bash
@@ -35,7 +32,7 @@ foo@bar:~/Downloads/Asus_L410M_Numpad$ sudo ./install.sh
 ```
 You can also download the
 [latest release](http://github.com/danahynes/Asus_L410M_Numpad/releases/latest),
-unzip it, install libevdev, and run the install.sh file from there.
+unzip it, and run the install.sh file from there.
 
 # Uninstalling
 
@@ -52,6 +49,8 @@ foo@bar:~$ sudo systemctl disable asus_l410m_numpad
 foo@bar:~$ sudo rm -rf /usr/bin/asus_l410m_numpad.py
 foo@bar:~$ sudo rm -rf /lib/systemd/system/asus_l410m_numpad.service
 foo@bar:~$ sudo rm -rf /var/log/asus_l410m_numpad.log
+
+sudo apt-get remove python3-libevdev
 ```
 
 # Notes
