@@ -7,6 +7,9 @@
 # License : WTFPLv2                                              \          /  #
 #------------------------------------------------------------------------------#
 
+# install dependencies
+sudo apt-get install python3-libevdev
+
 # copy files to location
 sudo cp ./asus_l410m_numpad.py /usr/bin
 sudo cp ./asus_l410m_numpad.service /lib/systemd/system/
@@ -14,5 +17,6 @@ sudo cp ./asus_l410m_numpad.service /lib/systemd/system/
 # start service now and on reboot
 sudo systemctl start asus_l410m_numpad
 sudo systemctl enable asus_l410m_numpad
+
 
 # -)
