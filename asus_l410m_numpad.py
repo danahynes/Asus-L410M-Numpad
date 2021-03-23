@@ -45,7 +45,7 @@ def get_device(device_name):
 
             # walk through the file
             for line in lines:
-                if device_name in line.upper():
+                if device_name.upper() in line.upper():
 
                     # keep walking
                     device_found = True
@@ -77,7 +77,7 @@ def get_device(device_name):
 
     # no device, no laundry
     if not device_found or device_id == -1:
-        return device # None
+        return None
 
     # try to connect to device
     if os.path.exists('/dev/input/event' + str(device_id)):
@@ -89,13 +89,15 @@ def get_device(device_name):
         try:
             fcntl.fcntl(fd_device, fcntl.F_SETFL, os.O_NONBLOCK)
         except ValueError as err:
-            pass
+            logging.debug(str(err))
+            return None
 
         # get a device object (end point) for the file descriptor (pipe)
         try:
             device = libevdev.Device(fd_device)
         except libevdev.device.InvalidFileError as err:
-            pass
+            logging.debug(str(err))
+            return None
 
         # return found (or not found) device
         return device
@@ -104,32 +106,35 @@ def get_device(device_name):
 def get_current_rect():
 
     # the default result is none
-    return_rect = None
+    result_rect = None
 
     # loop through all rects
     for rect in all_rects:
 
         # if pt in rect
-        if (rect[0] <= current_pt[0] <= rect[2]) and (rect[1] <= current_pt[1] <= rect[3]):
+        if (
+            (rect[0] <= current_pt[0] <= rect[2]) and
+            (rect[1] <= current_pt[1] <= rect[3])
+        ):
 
             # the result rect
-            return_rect = rect
+            result_rect = rect
             break
 
     # return result rect (or default none)
-    return return_rect
+    return result_rect
 
 # use numpad device to press all keys for rect
 def send_keys_down():
 
     # if rect is valid
     if start_rect != None:
-        tuple_size = len(start_rect)
-        num_keys = (tuple_size - 4)
-        last_keys = start_rect[-num_keys:]
+        list_size = len(start_rect)
+        num_keys = (list_size - 4)
+        rect_keys = start_rect[-num_keys:]
 
         # press all keys for rect
-        for key in last_keys:
+        for key in rect_keys:
             try:
                 events = [
                     libevdev.InputEvent(key, 1),
@@ -150,12 +155,12 @@ def send_keys_up_and_reset():
 
     # if rect is valid
     if start_rect != None:
-        tuple_size = len(start_rect)
-        num_keys = (tuple_size - 4)
-        last_keys = start_rect[-num_keys:]
+        list_size = len(start_rect)
+        num_keys = (list_size - 4)
+        rect_keys = start_rect[-num_keys:]
 
         # release all keys for rect
-        for key in reversed(last_keys):
+        for key in reversed(rect_keys):
             try:
                 events = [
                     libevdev.InputEvent(key, 0),
@@ -205,8 +210,6 @@ def check_numlock_state():
     # ungrab if off
     else:
         touchpad.ungrab()
-
-
 
 #-------------------------------------------------------------------------------
 # Initialize
@@ -318,28 +321,28 @@ keys = [
 ]
 
 # rects for keys - rect = (x, y, (x + w), (y + h), libevdev.EV_KEY.KEY_*, ...)
-rect_numlock =      (numlock_x, numlock_y,  (numlock_x + numlock_width),    (numlock_y + numlock_height),   keys[0])
-rect_1 =            (cols[0],   rows[2],    (cols[0] + col_width),          (rows[2] + row_height),         keys[1])
-rect_2 =            (cols[1],   rows[2],    (cols[1] + col_width),          (rows[2] + row_height),         keys[2])
-rect_3 =            (cols[2],   rows[2],    (cols[2] + col_width),          (rows[2] + row_height),         keys[3])
-rect_4 =            (cols[0],   rows[1],    (cols[0] + col_width),          (rows[1] + row_height),         keys[4])
-rect_5 =            (cols[1],   rows[1],    (cols[1] + col_width),          (rows[1] + row_height),         keys[5])
-rect_6 =            (cols[2],   rows[1],    (cols[2] + col_width),          (rows[1] + row_height),         keys[6])
-rect_7 =            (cols[0],   rows[0],    (cols[0] + col_width),          (rows[0] + row_height),         keys[7])
-rect_8 =            (cols[1],   rows[0],    (cols[1] + col_width),          (rows[0] + row_height),         keys[8])
-rect_9 =            (cols[2],   rows[0],    (cols[2] + col_width),          (rows[0] + row_height),         keys[9])
-rect_0 =            (cols[0],   rows[3],    (cols[0] + col_width),          (rows[3] + row_height),         keys[10])
-rect_comma =        (cols[1],   rows[3],    (cols[1] + col_width),          (rows[3] + row_height),         keys[11])
-rect_enter =        (cols[2],   rows[3],    (cols[2] + col_width),          (rows[3] + row_height),         keys[12])
-rect_slash =        (cols[3],   rows[0],    (cols[3] + col_width),          (rows[0] + row_height),         keys[13])
-rect_asterisk =     (cols[3],   rows[1],    (cols[3] + col_width),          (rows[1] + row_height),         keys[14])
-rect_minus =        (cols[3],   rows[2],    (cols[3] + col_width),          (rows[2] + row_height),         keys[15])
-rect_plus =         (cols[3],   rows[3],    (cols[3] + col_width),          (rows[3] + row_height),         keys[16])
+rect_numlock =      [numlock_x, numlock_y,  (numlock_x + numlock_width),    (numlock_y + numlock_height),   keys[0]]
+rect_1 =            [cols[0],   rows[2],    (cols[0] + col_width),          (rows[2] + row_height),         keys[1]]
+rect_2 =            [cols[1],   rows[2],    (cols[1] + col_width),          (rows[2] + row_height),         keys[2]]
+rect_3 =            [cols[2],   rows[2],    (cols[2] + col_width),          (rows[2] + row_height),         keys[3]]
+rect_4 =            [cols[0],   rows[1],    (cols[0] + col_width),          (rows[1] + row_height),         keys[4]]
+rect_5 =            [cols[1],   rows[1],    (cols[1] + col_width),          (rows[1] + row_height),         keys[5]]
+rect_6 =            [cols[2],   rows[1],    (cols[2] + col_width),          (rows[1] + row_height),         keys[6]]
+rect_7 =            [cols[0],   rows[0],    (cols[0] + col_width),          (rows[0] + row_height),         keys[7]]
+rect_8 =            [cols[1],   rows[0],    (cols[1] + col_width),          (rows[0] + row_height),         keys[8]]
+rect_9 =            [cols[2],   rows[0],    (cols[2] + col_width),          (rows[0] + row_height),         keys[9]]
+rect_0 =            [cols[0],   rows[3],    (cols[0] + col_width),          (rows[3] + row_height),         keys[10]]
+rect_comma =        [cols[1],   rows[3],    (cols[1] + col_width),          (rows[3] + row_height),         keys[11]]
+rect_enter =        [cols[2],   rows[3],    (cols[2] + col_width),          (rows[3] + row_height),         keys[12]]
+rect_slash =        [cols[3],   rows[0],    (cols[3] + col_width),          (rows[0] + row_height),         keys[13]]
+rect_asterisk =     [cols[3],   rows[1],    (cols[3] + col_width),          (rows[1] + row_height),         keys[14]]
+rect_minus =        [cols[3],   rows[2],    (cols[3] + col_width),          (rows[2] + row_height),         keys[15]]
+rect_plus =         [cols[3],   rows[3],    (cols[3] + col_width),          (rows[3] + row_height),         keys[16]]
 # backspace key is two rows high
-rect_backspace =    (cols[4],   rows[0],    (cols[4] + col_width),          (rows[0] + (row_height * 2)),   keys[17])
+rect_backspace =    [cols[4],   rows[0],    (cols[4] + col_width),          (rows[0] + (row_height * 2)),   keys[17]]
 # precent needs two keys (shift and 5)
-rect_percent =      (cols[4],   rows[2],    (cols[4] + col_width),          (rows[2] + row_height),         keys[18], keys[19])
-rect_equal =        (cols[4],   rows[3],    (cols[4] + col_width),          (rows[3] + row_height),         keys[20])
+rect_percent =      [cols[4],   rows[2],    (cols[4] + col_width),          (rows[2] + row_height),         keys[18], keys[19]]
+rect_equal =        [cols[4],   rows[3],    (cols[4] + col_width),          (rows[3] + row_height),         keys[20]]
 
 # create array of recognized rects
 all_rects = [
@@ -441,14 +444,14 @@ while True:
                     # if numlock on, send number key(s)
                     if numlock_state:
                         send_keys_down()
-                        touchpad.grab()
+                        #touchpad.grab()
 
             # one finger up
             elif e.value == 0:
 
                 # release the hounds! (er, keys)
                 send_keys_up_and_reset()
-                touchpad.ungrab()
+                #touchpad.ungrab()
 
 #-------------------------------------------------------------------------------
 
