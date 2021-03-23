@@ -24,8 +24,6 @@ foo@bar:~/Downloads$ git clone https://github.com/danahynes/Asus_L410M_Numpad
 foo@bar:~/Downloads$ cd Asus_L410M_Numpad
 ```
 
-After that, install the latest version of libevdev:
-
 Once you do that, you can install by:
 ```bash
 foo@bar:~/Downloads/Asus_L410M_Numpad$ sudo ./install.sh
@@ -49,8 +47,6 @@ foo@bar:~$ sudo systemctl disable asus_l410m_numpad
 foo@bar:~$ sudo rm -rf /usr/bin/asus_l410m_numpad.py
 foo@bar:~$ sudo rm -rf /lib/systemd/system/asus_l410m_numpad.service
 foo@bar:~$ sudo rm -rf /var/log/asus_l410m_numpad.log
-
-sudo apt-get remove python3-libevdev
 ```
 
 # Notes
@@ -59,7 +55,7 @@ If you are using Elementary OS 5, enable the Numlock indicator by going to
 System Settings -> Keyboard -> Layout -> Show in panel -> Numlock and turning
 it on.
 
-To toggle the numpad mode, press and hold on the toggle area for >
+To toggle the numpad mode, touch and hold on the toggle area for >
 (TOGGLE_HOLD_TIME)[default = 2] seconds.
 
 I have not been able to get the backlight for the numpad working yet. I thought
@@ -77,12 +73,12 @@ It seems that after a full Windows 10 install, with the proper drivers
 installed, my numpad only has a little LED next to the toggle switch to indicate
 if it is On or Off. I thought it illuminated the whole touchpad, though I could
 be wrong as I didn't keep the original Windows on this laptop for more than a
-few minutes (viva el linux!). Either way it doesn't work yet and I am working on
-it.
+few minutes (viva el GNU/Linux!). Either way it doesn't work yet and I am
+working on it.
 
 Also a lot of people on the interwebs complained about the Windows driver's
-toggle switch being too finicky, so I added a timeout where you have to press
-and hold the toggle button for (TOGGLE_HOLD_TIME) seconds for the toggle to take
+toggle switch being too finicky, so I added a timeout where you have to touch
+and hold the toggle area for (TOGGLE_HOLD_TIME) seconds for the toggle to take
 place. The default is two(2) seconds.
 
 One finger tracking is complete, so that if you touch on a number and hold the
