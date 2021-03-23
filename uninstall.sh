@@ -17,6 +17,6 @@ sudo rm -rf /lib/systemd/system/asus_l410m_numpad.service
 sudo rm -rf /var/log/asus_l410m_numpad.log
 
 # remove dependencies
-sudo apt-get remove python3-libevdev
+#sudo apt-get remove python3-libevdev
 
 # -)
