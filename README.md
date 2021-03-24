@@ -43,7 +43,6 @@ or delete the files manually:
 ```bash
 foo@bar:~$ sudo systemctl stop asus_l410m_numpad
 foo@bar:~$ sudo systemctl disable asus_l410m_numpad
-
 foo@bar:~$ sudo rm -rf /usr/bin/asus_l410m_numpad.py
 foo@bar:~$ sudo rm -rf /lib/systemd/system/asus_l410m_numpad.service
 foo@bar:~$ sudo rm -rf /var/log/asus_l410m_numpad.log
