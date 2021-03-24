@@ -443,6 +443,7 @@ rect_plus = [
     (rows[3] + row_height),
     keys[16]
 ]
+
 # backspace key is two rows high
 rect_backspace = [
     cols[4],
@@ -451,6 +452,7 @@ rect_backspace = [
     (rows[0] + (row_height * 2)),
     keys[17]
 ]
+
 # precent needs two keys (shift and 5)
 rect_percent = [
     cols[4],
