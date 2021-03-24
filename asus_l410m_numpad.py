@@ -427,7 +427,7 @@ rect_asterisk = [
     rows[1],
     (cols[3] + col_width),
     (rows[1] + row_height),
-    keys[14]]
+    keys[14]
 ]
 rect_minus = [
     cols[3],
