@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #------------------------------------------------------------------------------#
 # Filename: asus_l410m_numpad.py                                 /          \  #
 # Project : Asus_L410M_Numpad                                   |     ()     | #
@@ -496,9 +497,5 @@ while True:
 
 # ungrab touchpad if it was grabbed
 touchpad.ungrab()
-
-# close file descriptors for devices
-fd_touchpad.close()
-fd_keyboard.close()
 
 # -)
