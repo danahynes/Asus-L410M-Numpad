@@ -7,6 +7,8 @@
 # License : WTFPLv2                                              \          /  #
 #------------------------------------------------------------------------------#
 
+# N.B. doesn't matter if run as sudo or not
+
 # install dependencies
 sudo apt-get install python3-libevdev
 

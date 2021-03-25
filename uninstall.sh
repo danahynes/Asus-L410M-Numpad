@@ -7,6 +7,8 @@
 # License : WTFPLv2                                              \          /  #
 #------------------------------------------------------------------------------#
 
+# N.B. doesn't matter if run as sudo or not
+
 # stop service now and on reboot
 sudo systemctl stop asus_l410m_numpad
 sudo systemctl disable asus_l410m_numpad
