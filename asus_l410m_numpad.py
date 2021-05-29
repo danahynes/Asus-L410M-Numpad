@@ -241,7 +241,7 @@ size_info_y = touchpad.absinfo[libevdev.EV_ABS.ABS_Y]
 min_y = size_info_y.minimum
 max_y = size_info_y.maximum
 
-# N.B. Not to scale, numlock rect is about half as wide as other columns, and
+# NB: Not to scale, numlock rect is about half as wide as other columns, and
 # about half as high as other rows. It overlaps in the x direction but not the
 # y. All number rows are about equal, and all number columns are about equal.
 # That means the numlock column is about 1/10 total width and all number columns
@@ -297,7 +297,7 @@ rows = [
 ]
 
 # create a list of keys that the numpad supports
-# N.B. order is inportant here to assign keys to rects
+# NB: order is inportant here to assign keys to rects
 keys = [
     libevdev.EV_KEY.KEY_NUMLOCK,    # for toggle
     libevdev.EV_KEY.KEY_KP1,
@@ -598,7 +598,7 @@ while True:
 
 #-------------------------------------------------------------------------------
 
-    # N.B. this code is called every time through the loop
+    # NB: this code is called every time through the loop
     if (
 
         # if finger is in numlock rect
